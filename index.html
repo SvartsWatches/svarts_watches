@@ -162,7 +162,7 @@
   .chip .sw{width:13px;height:13px;border-radius:50%;border:1px solid rgba(0,0,0,.15)}
 
   /* inputs */
-  textarea,input[type=text]{
+  textarea,input[type=text],input[type=email],input[type=tel]{
     width:100%;border:1px solid var(--line);border-radius:var(--radius);
     padding:14px 16px;font-family:inherit;font-size:15px;color:var(--ink);background:var(--card);
     resize:vertical;transition:.2s;
@@ -236,8 +236,8 @@
   .sending{display:none;font-size:13px;color:var(--ink-soft);margin-top:14px}
 
   /* full-screen sending overlay */
-  .overlay{position:fixed;inset:0;background:rgba(238,240,243,.45);
-    backdrop-filter:blur(16px) saturate(1.1);-webkit-backdrop-filter:blur(16px) saturate(1.1);
+  .overlay{position:fixed;inset:0;background:rgba(238,240,243,.3);
+    backdrop-filter:blur(8px) saturate(1.05);-webkit-backdrop-filter:blur(8px) saturate(1.05);
     display:none;align-items:center;justify-content:center;z-index:1000}
   .overlay.show{display:flex}
   .overlay-text{font-family:'Libre Baskerville',serif;color:var(--ink);font-size:clamp(15px,2.4vw,26px);letter-spacing:.04em}
@@ -431,10 +431,10 @@ function buildNav(wrap, step, vis){
 function renderContact(el){
   el.innerHTML=`
     <div class="field-label">Full name *</div>
-    <input type="text" id="cName" placeholder="Your name"/>
+    <input type="text" id="cName" placeholder="Your name" autocomplete="name"/>
     <div class="field-label">How can we reach you? <span style="font-weight:400">(at least one)</span> *</div>
-    <input type="text" id="cPhone" placeholder="Cellphone number" inputmode="tel"/>
-    <input type="text" id="cEmail" placeholder="Email address" inputmode="email" style="margin-top:10px"/>`;
+    <input type="tel" id="cPhone" placeholder="Cellphone number" inputmode="tel" autocomplete="tel"/>
+    <input type="email" id="cEmail" placeholder="Email address" inputmode="email" autocomplete="email" style="margin-top:10px"/>`;
   const bind=(id,key)=>{const i=el.querySelector(id);i.value=state[key];i.oninput=e=>{
     state[key]=e.target.value;
     if(id==="#cName"){ setErr("cName",false); }
