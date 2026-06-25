@@ -237,7 +237,6 @@
 
   <!-- INTRO -->
   <section class="center-screen" id="intro">
-    <div class="intro-grid"><div class="intro-text">
     <div class="brand-hero">SVARTS</div>
     <h1 class="hero-title">Build your<br/>timepiece.</h1>
     <p class="hero-sub">A few questions about movement, materials and finish.<br/>We review your brief and return an estimate.</p>
@@ -247,14 +246,6 @@
         <path d="M26 2 L34 8 L26 14" stroke="currentColor" stroke-width="1.2" stroke-linecap="round" stroke-linejoin="round"/>
       </svg>
     </button>
-    </div>
-    <div class="intro-img">
-      <!-- EDIT ZONE 4 — save your skeleton-watch image into this folder as
-           watch2.png and it shows here. Until then a fallback photo appears. -->
-      <img id="heroWatch" alt="Timepiece" src="watch2.png"
-           onerror="this.onerror=null;this.src='https://images.unsplash.com/photo-1755434594333-ed3e51254385?fm=jpg&q=80&w=1200&auto=format&fit=crop';this.classList.add('fallback');"/>
-    </div>
-    </div>
   </section>
 
   <!-- CONFIGURATOR -->
@@ -281,8 +272,11 @@
   <section class="center-screen hide" id="thanks">
     <div class="eyebrow">Received</div>
     <h1 class="hero-title">Thank you.</h1>
-    <p class="hero-sub">Your brief is with the maker. You'll hear back by email with a firm quote and next steps.</p>
-    <a class="btn btn-primary" id="siteBtn" href="#">Go to SVARTS website &nbsp;→</a>
+    <p class="hero-sub">Your brief is with the maker. Book a consultation below, or we'll be in touch by email with a firm quote.</p>
+    <div style="display:flex;gap:12px;flex-wrap:wrap;align-items:center">
+      <a class="btn btn-primary" id="bookBtn" href="#" target="_blank" rel="noopener">Book a consultation &nbsp;→</a>
+      <a class="btn btn-ghost" id="siteBtn" href="#">SVARTS website</a>
+    </div>
   </section>
 
 <script>
@@ -295,11 +289,15 @@ const APPS_SCRIPT_URL = "https://script.google.com/macros/s/AKfycbxS0l7gF7ZlvcI5
 /* EDIT ZONE 2 — the SVARTS website the final button links to. */
 const SITE_URL = "https://svartswatches.com/"; // <-- change to your real site
 
+/* EDIT ZONE 5 — your Google Calendar appointment-scheduling link.
+   Leave "" to hide the booking button until you have one. */
+const BOOKING_URL = "";
+
 /* ---------- state ---------- */
 const state = {
-  name:"", phone:"", instagram:"", email:"",
+  name:"", phone:"", email:"",
   movement:"", references:[],
-  brands:"", materials:[], strap:"", bracelet:"", dial:"", notes:""
+  brands:"", materials:[], strap:"", bracelet:"", dial:"", size:"", wrist:"", notes:""
 };
 
 const PRICE = {
@@ -348,7 +346,9 @@ const steps = [
    sub:"Which steel bracelet do you prefer?", render:renderBracelet, when:()=>state.strap==="Steel"},
   {id:"dial", eyebrow:"Step 06", title:"Dial colour.",
    sub:"The face of the watch.", render:renderDial},
-  {id:"notes", eyebrow:"Step 07", title:"Notes for the maker.",
+  {id:"sizing", eyebrow:"Step 07", title:"Sizing.",
+   sub:"Case diameter, and your wrist size if you know it.", render:renderSizing},
+  {id:"notes", eyebrow:"Step 08", title:"Notes for the maker.",
    sub:"Anything else — engraving, size, deadline, budget.", render:renderNotes},
   {id:"review", eyebrow:"Final", title:"Review your brief.",
    sub:"Check everything, then send it through.", render:renderReview}
@@ -416,10 +416,9 @@ function renderContact(el){
     <input type="text" id="cName" placeholder="Your name"/>
     <div class="field-label">How can we reach you? <span style="font-weight:400">(at least one)</span> *</div>
     <input type="text" id="cPhone" placeholder="Cellphone number" inputmode="tel"/>
-    <input type="text" id="cIg" placeholder="Instagram handle" style="margin-top:10px"/>
     <input type="text" id="cEmail" placeholder="Email address" inputmode="email" style="margin-top:10px"/>`;
   const bind=(id,key)=>{const i=el.querySelector(id);i.value=state[key];i.oninput=e=>state[key]=e.target.value;};
-  bind("#cName","name"); bind("#cPhone","phone"); bind("#cIg","instagram"); bind("#cEmail","email");
+  bind("#cName","name"); bind("#cPhone","phone"); bind("#cEmail","email");
 }
 function renderMovement(el){
   const opts=Object.keys(PRICE).map(k=>{
@@ -592,6 +591,17 @@ function renderDial(el){
   };
   refresh();
 }
+const SIZES = ["36mm","38mm","40mm","41mm","42mm","44mm","Not sure"];
+function renderSizing(el){
+  const chips=SIZES.map(s=>`<div class="chip ${state.size===s?"sel":""}" data-s="${s}">${s}</div>`).join("");
+  el.innerHTML=`
+    <div class="field-label">Case diameter *</div>
+    <div class="chips">${chips}</div>
+    <div class="field-label">Wrist size / circumference (optional)</div>
+    <input type="text" id="wrist" placeholder="e.g. 17 cm, or 'medium'"/>`;
+  el.querySelectorAll(".chip").forEach(c=>c.onclick=()=>{state.size=c.dataset.s;renderSizing(el);});
+  const w=el.querySelector("#wrist"); w.value=state.wrist; w.oninput=e=>state.wrist=e.target.value;
+}
 function renderNotes(el){
   el.innerHTML=`<textarea id="ta" placeholder="Engraving, case size, deadline, budget, anything else…">${state.notes}</textarea>`;
   el.querySelector("#ta").oninput=e=>state.notes=e.target.value;
@@ -602,7 +612,7 @@ function renderReview(el){
   el.innerHTML=`
     <div class="review-list">
       ${row("Name", state.name)}
-      ${row("Contact", [state.phone, state.instagram?("@"+state.instagram.replace(/^@/,"")):"", state.email].filter(Boolean).join("  ·  "))}
+      ${row("Contact", [state.phone, state.email].filter(Boolean).join("  ·  "))}
       ${row("Movement", state.movement)}
       ${row("Reference images", state.references.map(r=>r.filename).join(", "))}
       ${row("Brands / models", state.brands)}
@@ -610,6 +620,8 @@ function renderReview(el){
       ${row("Strap", state.strap)}
       ${state.strap==="Steel"?row("Bracelet style", state.bracelet):""}
       ${row("Dial colour", state.dial)}
+      ${row("Case size", state.size)}
+      ${row("Wrist size", state.wrist)}
       ${row("Notes", state.notes)}
     </div>
     <div class="price-box"><div><div class="lab">Estimated price</div></div><div class="amt">${price}</div></div>
@@ -631,7 +643,7 @@ function validateStep(step){
   switch(step.id){
     case "contact":
       if(!state.name.trim()){ ok=false; msg="Please enter your name."; }
-      else if(!(state.phone.trim()||state.instagram.trim()||state.email.trim())){ ok=false; msg="Please add at least one contact — phone, Instagram, or email."; }
+      else if(!(state.phone.trim()||state.email.trim())){ ok=false; msg="Please add at least one contact — phone or email."; }
       break;
     case "movement":  ok=!!state.movement;            msg="Please choose a movement."; break;
     case "reference": ok=state.references.length>0;    msg="Please upload at least one reference image."; break;
@@ -640,6 +652,7 @@ function validateStep(step){
     case "strap":     ok=!!state.strap;                msg="Please choose a strap material."; break;
     case "bracelet":  ok=!!state.bracelet;             msg="Please choose a bracelet style."; break;
     case "dial":      ok=!!state.dial;                 msg="Please choose a dial colour."; break;
+    case "sizing":    ok=!!state.size;                 msg="Please choose a case size."; break;
     case "notes":     ok=state.notes.trim().length>0;  msg="Please add a note for the maker."; break;
   }
   if(err) err.textContent = ok ? "" : msg;
@@ -651,7 +664,7 @@ async function submitForm(){
   // safety net — every field is required
   const missing=[];
   if(!state.name.trim()) missing.push("your name");
-  if(!(state.phone.trim()||state.instagram.trim()||state.email.trim())) missing.push("a contact method");
+  if(!(state.phone.trim()||state.email.trim())) missing.push("a contact method");
   if(!state.movement) missing.push("movement");
   if(!state.references.length) missing.push("reference image");
   if(!state.brands.trim()) missing.push("brands/models");
@@ -659,17 +672,19 @@ async function submitForm(){
   if(!state.strap) missing.push("strap");
   if(state.strap==="Steel" && !state.bracelet) missing.push("bracelet style");
   if(!state.dial) missing.push("dial colour");
+  if(!state.size) missing.push("case size");
   if(!state.notes.trim()) missing.push("notes");
   if(missing.length){ alert("Please complete: "+missing.join(", ")+"."); return; }
   const btn=document.getElementById("sendBtn"); const sending=document.getElementById("sending");
   btn.disabled=true; sending.style.display="block";
   const payload={
     submitted_at:new Date().toISOString(),
-    name:state.name, phone:state.phone, instagram:state.instagram, email:state.email,
+    name:state.name, phone:state.phone, email:state.email,
     movement:state.movement,
     estimated_price: PRICE[state.movement]?PRICE[state.movement].label:"",
     brands:state.brands, materials:state.materials.join(", "),
-    strap:state.strap, bracelet:state.bracelet, dial:state.dial, notes:state.notes,
+    strap:state.strap, bracelet:state.bracelet, dial:state.dial,
+    size:state.size, wrist:state.wrist, notes:state.notes,
     references:state.references
   };
   if(!APPS_SCRIPT_URL){
@@ -695,8 +710,9 @@ function done(){
   window.scrollTo({top:0,behavior:"smooth"});
 }
 
-/* wire the final button to the SVARTS site */
+/* wire the thank-you buttons */
 document.getElementById("siteBtn").href = SITE_URL || "#";
+(function(){ var b=document.getElementById("bookBtn"); if(BOOKING_URL){ b.href=BOOKING_URL; } else { b.style.display="none"; } })();
 </script>
 </body>
 </html>
