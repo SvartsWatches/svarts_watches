@@ -435,15 +435,12 @@ function renderContact(el){
   el.innerHTML=`
     <div class="field-label">Full name *</div>
     <input type="text" id="cName" placeholder="Your name" autocomplete="name"/>
-    <div class="field-label">How can we reach you? <span style="font-weight:400">(at least one)</span> *</div>
-    <input type="tel" id="cPhone" placeholder="Cellphone number" inputmode="tel" autocomplete="tel"/>
-    <input type="email" id="cEmail" placeholder="Email address" inputmode="email" autocomplete="email" style="margin-top:10px"/>`;
-  const bind=(id,key)=>{const i=el.querySelector(id);i.value=state[key];i.oninput=e=>{
-    state[key]=e.target.value;
-    if(id==="#cName"){ setErr("cName",false); }
-    else { setErr("cPhone",false); setErr("cEmail",false); }   // either contact typed → clear both
-  };};
-  bind("#cName","name"); bind("#cPhone","phone"); bind("#cEmail","email");
+    <div class="field-label">Cellphone number *</div>
+    <input type="tel" id="cPhone" placeholder="e.g. 071 234 5678" inputmode="tel" autocomplete="tel"/>
+    <div class="field-label">Email address <span style="font-weight:400">(optional)</span></div>
+    <input type="email" id="cEmail" placeholder="you@example.com" inputmode="email" autocomplete="email"/>`;
+  const bind=(id,key,errId)=>{const i=el.querySelector(id);i.value=state[key];i.oninput=e=>{ state[key]=e.target.value; setErr(errId,false); };};
+  bind("#cName","name","cName"); bind("#cPhone","phone","cPhone"); bind("#cEmail","email","cEmail");
 }
 function renderMovement(el){
   const opts=Object.keys(PRICE).map(k=>{
@@ -616,7 +613,7 @@ function renderDial(el){
   };
   refresh();
 }
-const SIZES = ["36mm","38mm","40mm","41mm","42mm","44mm","Not sure"];
+const SIZES = ["36mm","38mm","40mm","41mm","42mm","44mm"];
 function renderSizing(el){
   const chips=SIZES.map(s=>`<div class="chip ${state.size===s?"sel":""}" data-s="${s}">${s}</div>`).join("");
   el.innerHTML=`
@@ -674,11 +671,11 @@ function validateStep(step){
   switch(step.id){
     case "contact": {
       var nameBad=!state.name.trim();
-      var noContact=!(state.phone.trim()||state.email.trim());
+      var phoneBad=!state.phone.trim();
       var emailBad=!!state.email.trim() && !isEmail(state.email);
       var typo=(!emailBad && state.email.trim()) ? emailTypo(state.email) : null;
       if(nameBad){ ok=false; msg="Please enter your name."; setErr("cName",true); }
-      else if(noContact){ ok=false; msg="Please add at least one contact — phone or email."; setErr("cPhone",true); setErr("cEmail",true); }
+      else if(phoneBad){ ok=false; msg="Please enter a cellphone number."; setErr("cPhone",true); }
       else if(emailBad){ ok=false; msg="That email doesn't look right — please check it."; setErr("cEmail",true); }
       else if(typo){ ok=false; msg="Please check your email — did you mean @"+typo+"?"; setErr("cEmail",true); }
       break;
@@ -702,7 +699,7 @@ async function submitForm(){
   // safety net — every field is required
   const missing=[];
   if(!state.name.trim()) missing.push("your name");
-  if(!(state.phone.trim()||state.email.trim())) missing.push("a contact method");
+  if(!state.phone.trim()) missing.push("a phone number");
   if(!state.movement) missing.push("movement");
   if(!state.references.length) missing.push("reference image");
   if(!state.brands.trim()) missing.push("brands/models");
