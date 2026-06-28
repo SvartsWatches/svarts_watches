@@ -251,7 +251,7 @@
   /* sizing */
   .sizing-wrap{display:grid;grid-template-columns:1fr 300px;gap:28px;align-items:start}
   @media(max-width:760px){.sizing-wrap{grid-template-columns:1fr}}
-  .sizing-visual{background:var(--card);border-radius:var(--radius);padding:14px;box-shadow:0 2px 12px -6px rgba(20,24,29,.18)}
+  .sizing-visual{background:transparent}
   .sizing-visual svg{width:100%;height:auto;display:block}
   .size-readout{text-align:center;font-size:12px;letter-spacing:.08em;color:var(--ink-soft);margin-top:8px;text-transform:uppercase}
   .wrist-range{-webkit-appearance:none;appearance:none;width:100%;height:3px;border-radius:3px;background:var(--line);outline:none;margin:8px 0}
@@ -615,7 +615,7 @@ function renderDial(el){
   refresh();
 }
 const SIZES = ["36mm","38mm","40mm","41mm","42mm","44mm"];
-const HANDWOUND_SIZES = ["40mm","44mm"];
+const HANDWOUND_SIZES = ["40mm","42mm","44mm"];
 function casesFor(){ return state.movement==="Hand wound"?HANDWOUND_SIZES:SIZES; }
 function wristCm(){ const v=parseFloat((state.wrist||"").replace(/[^\d.]/g,"")); return isNaN(v)?16:v; }
 function sizingDraw(){
@@ -632,8 +632,6 @@ function sizingDraw(){
   svg.innerHTML=`
     <line x1="${armL}" y1="6" x2="${armL}" y2="254" stroke="#16181d" stroke-width="1.4"/>
     <line x1="${armR}" y1="6" x2="${armR}" y2="254" stroke="#16181d" stroke-width="1.4"/>
-    <rect x="${cx-strapW/2}" y="6" width="${strapW}" height="${Math.max(cy-cPx/2-6,0)}" fill="none" stroke="#16181d" stroke-width="1.2"/>
-    <rect x="${cx-strapW/2}" y="${cy+cPx/2}" width="${strapW}" height="${Math.max(254-(cy+cPx/2),0)}" fill="none" stroke="#16181d" stroke-width="1.2"/>
     <circle cx="${cx}" cy="${cy}" r="${cPx/2}" fill="#ffffff" stroke="#16181d" stroke-width="1.6" stroke-dasharray="${dash}" opacity="${op}"/>
     <circle cx="${cx}" cy="${cy}" r="${Math.max(cPx/2-7,4)}" fill="none" stroke="#c8ccd2" stroke-width="1"/>
     <rect x="${cx+cPx/2}" y="${cy-3}" width="6" height="6" fill="#16181d"/>`;
